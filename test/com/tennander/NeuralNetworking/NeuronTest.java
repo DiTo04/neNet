@@ -7,8 +7,14 @@ package com.tennander.NeuralNetworking;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+
+import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,68 +25,81 @@ import org.junit.Test;
  */
 public class NeuronTest {
 
-    private Neuron mNeuronA;
-    private Neuron mNeuronB;
-    private Neuron mNeuronC;
+    private BinaryNeuron mNeuronA;
+    private BinaryNeuron mNeuronB;
+    private BinaryNeuron mNeuronC;
+    private Neuron mNeuron;
+    private static float sThreshold = 1;
 
     /**
      * Setting up three Neurons for testing. 
      */
     @Before
     public void creatingNeurons(){
-        mNeuronA = new Neuron();
-        mNeuronB = new Neuron();
-        mNeuronC = new Neuron();
+        mNeuronA = new BinaryNeuron(sThreshold);
+        mNeuronB = new BinaryNeuron(sThreshold);
+        mNeuronC = new BinaryNeuron(sThreshold);
+        mNeuron = new BinaryNeuron(sThreshold);
         assertNotNull(mNeuronA);
         assertNotNull(mNeuronB);
         assertNotNull(mNeuronC);
     }
     @Test
-    public void constructorTest1(){
+    public void constructorTestBinary(){
         float tThreshold = 0.6f;
-        Neuron tNeuron = new Neuron(tThreshold);
+        BinaryNeuron tNeuron = new BinaryNeuron(tThreshold);
         assertEquals(tThreshold, tNeuron.getThreshold(), 0);
     }
     
     @Test
-    public void constructorTest2(){
-        float tThreshold = 0f;
-        Neuron tNeuron = new Neuron();
-        assertEquals(tThreshold, tNeuron.getThreshold(), 0);
+    public void constructorTestInput(){
+        float tInput = 0.4f;
+        InputNeuron tNeuron = new InputNeuron(tInput);
+        assertEquals(tInput, tNeuron.fire(), 0);
     }
     
     @Test
-    public void lifeCycleTest(){
-        assertFalse(mNeuronA.isFired());
-        mNeuronA.fire();
-        assertTrue(mNeuronA.isFired());
-    }
-    
-    
-    /**
-     * Testing XOR gate of structure: 
-     * @see <a href="http://i.stack.imgur.com/nRZ6z.png">http://i.stack.imgur.com/nRZ6z.png</a>
-     */
-   // @Test
-    public void xorTest(){
-        Neuron tXOR = new Neuron(1.5f);
-        Neuron tUpper = new Neuron(0.5f);
-        Neuron tLower = new Neuron(-1.5f);
-
-        Neuron tUpperInput = new Neuron(0f);
-        Neuron tLowerInput = new Neuron(0f);
-        
-        //Connections
-        tXOR.connect(tUpper, tLower);
-
-        
-        // 0 XOR 0 -> 0
-        tUpperInput.setWeight(false);
-        tLowerInput.setWeight(false);
-        
-        
+    public void connectionTest(){
+        float tWeight = 0.5f;
+        Set<Neuron> tExpectedSet = new HashSet<>();
+        tExpectedSet.add(mNeuronB);
+        tExpectedSet.add(mNeuronC);
+        for (Neuron tNeuron : tExpectedSet) {
+            mNeuronA.connect(tNeuron,tWeight);
+        }
+        Set<Neuron> tSet = mNeuronA.getConnections()
+                             .stream()
+                             .map(Entry::getKey)
+                             .collect(Collectors.toCollection(HashSet::new));
+        assertEquals(tExpectedSet, tSet);
         
     }
+    
+    @Test
+    public void connectionLinkTest(){
+        mNeuronA.setThreshold(1);
+        InputNeuron tInput = new InputNeuron(1);
+        mNeuronA.connect(tInput, 1);
+        boolean tResult = mNeuronA.fire()==1;
+        assertTrue(tResult);
+        
+        tInput.setInput(0);
+        tResult = mNeuronA.fire() == 1;
+        assertFalse(tResult);
+    }
 
-
+    @Test
+    public void updatingWeights(){
+        float tLearningRate = 0.25f;
+        InputNeuron tInput1 = new InputNeuron(1);
+        InputNeuron tInput2 = new InputNeuron(1);
+        mNeuron.connect(tInput1, 0.5f);
+        mNeuron.connect(tInput2, 0.5f);
+        
+        float tOutput = mNeuron.fire();
+        float tError = 0-tOutput;
+        mNeuron.updateAllConnectedWeights(tError, tLearningRate);
+        //Assert weights have changed.
+        assertNotEquals(tOutput, mNeuron.fire(), 0);
+    }
 }

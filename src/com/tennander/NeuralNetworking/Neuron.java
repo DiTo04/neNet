@@ -5,102 +5,100 @@
  */
 package com.tennander.NeuralNetworking;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  *
  * @author David Tennander, 8 juni 2016
  */
-public class Neuron {
-    
-    private float mWeight;
-    private float mThreshHold;
-    private List<Neuron> mConnections;
-    
-    /**
-     * Creates a Neuron with specified weight and threshold.
-     * @param pThreshold
-     * @param pWeight
-     */
-    public Neuron(float pThreshold, float pWeight) {
-        mThreshHold = pThreshold;
-        mWeight = pWeight;
-        mConnections = new ArrayList<Neuron>();
-    }
+public abstract class Neuron {
 
-    /**
-     * Creates a Neuron with specified threshold and
-     * setting weight to 1.
-     * @param pThreshhold
-     */
-    public Neuron(float pThreshold){
-        this(pThreshold, 1f);
-    }
+    private Map<Neuron, Float> mConnections;
 
-    /**
-     * Creates a Neuron with weight and threshold of  1.
-     */
-    public Neuron() {
-        this(1f);
-    }
-
-  
-
-    /**
-     * Set the weight of the neuron.
-     * @param pWight
-     */
-    public void setWeight(float pWight) {
-        mWeight = pWight;
-    }
-
-    /**
-     * Returns the Weight of the neuron.
-     * @return weight - float
-     */
-    public float getWeight() {
-        return mWeight;
-    }
-
-    /**
-     * Set the weight as boolean.
-     * @param pWight
-     */
-    public void setWeight(boolean pWight) {
-        mWeight = pWight? 1f:0f;        
-    }
-
-    /**
-     * @return
-     */
-    public boolean isFired() {
-        // TODO Auto-generated method stub
-        return false;
-    }
 
     /**
      * 
      */
-    public float fire() {
-        // TODO Auto-generated method stub
-        return 1;
+    public Neuron() {
+        mConnections = new HashMap<>();
     }
 
     /**
-     * @param pNeurons
+     * A method returning the result after calculating 
+     * the input and checking threshold.
+     * @return result - float
      */
-    public void connect(Neuron ... pNeurons) {
-        for(Neuron iNeuron:pNeurons) mConnections.add(iNeuron);
-        
+    public abstract float fire(); 
+
+    
+    /**
+     * The derivative of the activation function.
+     * @param pOutput
+     * @return
+     */
+    abstract float derivativeOfActivation(float pOutput);
+
+    /**
+     * Creates a connection between this Neuron and a underlying one.
+     * With specifed weight.
+     * @param pNeuron
+     * @param pWeight
+     */
+    public void connect(Neuron pNeuron, float pWeight) {
+        mConnections.put(pNeuron, pWeight); 
+    }
+
+    protected float getInputSum() {
+        float tInputSum = 0;
+        for (Entry<Neuron, Float> tEntry : mConnections.entrySet()) {
+            Float tWeight = tEntry.getValue();
+            float tSignal = tEntry.getKey().fire();
+            tInputSum += tSignal*tWeight;
+        }
+        return tInputSum;
     }
 
     /**
-     * Returns the Threshold.
-     * @return Threshold - float
+     * Returns the connected Neurons.
+     * @return Neurons - Set<Neuron>
      */
-    public float getThreshold() {
-        return mThreshHold;
+    public Set<Entry<Neuron, Float>> getConnections() {
+        return mConnections.entrySet();
+    }
+
+    /**
+     * @param pError
+     * @param pLearningRate 
+     */
+    public void updateAllConnectedWeights(float pError, float pLearningRate) {
+        LinkedList<Neuron> tQueue = new LinkedList<>();
+        tQueue.add(this);
+        while(!tQueue.isEmpty()){
+            Neuron tNeuron = tQueue.pop();
+            tNeuron.updateWeightAndAddChildrenToQueue(pError,pLearningRate,tQueue);
+        }    
+    }
+
+    /**
+     * @param pError
+     * @param pLearningRate
+     * @param pQueue
+     */
+    private void updateWeightAndAddChildrenToQueue(float pError, float pLearningRate, LinkedList<Neuron> pQueue) {
+        float tOutput = this.fire();
+        for (Entry<Neuron, Float> tEntry : mConnections.entrySet()) {
+            Neuron tChild = tEntry.getKey();
+            float tWeight = tEntry.getValue();
+            float tNewWeight = tWeight + pLearningRate*pError*tChild.fire()*derivativeOfActivation(tOutput);
+            tEntry.setValue(tNewWeight);
+            if(!pQueue.contains(tChild)) {
+                pQueue.add(tChild);
+            }
+        }    
     }
 
 
