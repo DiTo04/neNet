@@ -11,6 +11,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.experimental.categories.Categories.ExcludeCategory;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map.Entry;
 import Jama.Matrix;
 
 /**
@@ -48,6 +51,17 @@ public class Sigmoidtest {
     @Test
     public void backPropTest(){
         mNetwork.backprop(mGoodTestMatrix, mResultMatrix);
+    }
+    @Test
+    public void updateGivenSetOfDataTest(){
+        List<Matrix> tW = mNetwork.getWeightMatrexis();
+        List<Matrix> tB = mNetwork.getBiasis();
+        HashMap<Matrix, Matrix> tSeries = new HashMap<>();
+        tSeries.put(mGoodTestMatrix, mResultMatrix);
+        mNetwork.updateGivenSetOfData(tSeries.entrySet(), 0.5);
+        assertNotEquals(tW, mNetwork.getWeightMatrexis());
+        assertNotEquals(tB, mNetwork.getBiasis());
+        
     }
 
 }
