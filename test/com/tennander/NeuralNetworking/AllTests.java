@@ -15,8 +15,7 @@ import org.junit.runners.Suite.SuiteClasses;
  */
 @RunWith(Suite.class)
 @SuiteClasses({
-    NeuronTest.class,
-    NetTesting.class
+    Sigmoidtest.class
 })
 public class AllTests {
 
