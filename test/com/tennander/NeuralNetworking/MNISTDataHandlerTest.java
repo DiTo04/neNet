@@ -45,8 +45,8 @@ public class MNISTDataHandlerTest {
         Matrix tResult = mDataHandler.convertToMatrix(tTestMatrix, tScaleFactor);
         assertArrayEquals(tExpectedResult.getArray(), tResult.getArray());
     }
-
-    @Test
+    
+    //@Test
     public void canGetListOfMatrix() throws IOException {
         List<Matrix> tList = mDataHandler.getListOfImages();
         assertFalse(tList.isEmpty());

@@ -32,7 +32,8 @@ public class SigmoidNetwork {
         for (int tI = 1; tI < pLvlSizes.length; tI++) {
             int tThisLvlSize = pLvlSizes[tI];
             int tLvlSizeOneLvlBefore = pLvlSizes[tI-1];
-            mWeightMatrexis.add(Matrix.random(tThisLvlSize, tLvlSizeOneLvlBefore));
+            Matrix ones = new Matrix(tThisLvlSize, tLvlSizeOneLvlBefore, 1);
+            mWeightMatrexis.add(Matrix.random(tThisLvlSize, tLvlSizeOneLvlBefore).times(2).minus(ones));
             mBiasis.add(Matrix.random(tThisLvlSize, 1));            
         }
     }
@@ -51,7 +52,7 @@ public class SigmoidNetwork {
         return a;
     }
 
-    public void updateGivenSetOfData(Set<Entry<Matrix, Matrix>> pDataSeries, double pEta) {
+    public void updateGivenSetOfData(Set<Entry<Matrix, Matrix>> pDataSeries, double pEta, boolean pShouldPrintError) {
         List<Matrix> wNablaSumList = null;
         List<Matrix> bNablaSumList = null;
         for (Entry<Matrix, Matrix> tEntry : pDataSeries) {
@@ -74,10 +75,20 @@ public class SigmoidNetwork {
             Matrix bNablaSum = bNablaSumList.get(i);
             mWeightMatrexis.remove(i);
             mBiasis.remove(i);
-            mWeightMatrexis.add(i,w.minus(wNablaSum.times(-pEta/pDataSeries.size())));
-            mBiasis.add(i,b.minus(bNablaSum.times(-pEta/pDataSeries.size())));
+            mWeightMatrexis.add(i,w.minus(wNablaSum.times(pEta/pDataSeries.size())));
+            mBiasis.add(i,b.minus(bNablaSum.times(pEta/pDataSeries.size())));
+        }
+        if(pShouldPrintError){
+            System.out.format("The delta has the norm: %s%n", wNablaSumList.get(0).normF());
         }
     }
+
+    /**
+     * @param pShouldPrintError 
+     * @param pKey
+     * @return
+     */
+
 
     public List<List<Matrix>> backprop(Matrix pInput,Matrix pDesiredResult){
 
@@ -101,7 +112,6 @@ public class SigmoidNetwork {
             a = sigmoid(tZ);
             tActivations.add(a);
         }
-
         //BackProp
         Matrix tZ = tWeigtedInputs.get(tL-1);
         Matrix tDelta = costfunctionDerivative(a, pDesiredResult).arrayTimes(sigmoidPrim(tZ));

@@ -58,7 +58,7 @@ public class Sigmoidtest {
         List<Matrix> tB = mNetwork.getBiasis();
         HashMap<Matrix, Matrix> tSeries = new HashMap<>();
         tSeries.put(mGoodTestMatrix, mResultMatrix);
-        mNetwork.updateGivenSetOfData(tSeries.entrySet(), 0.5);
+        mNetwork.updateGivenSetOfData(tSeries.entrySet(), 0.5, true);
         assertNotEquals(tW, mNetwork.getWeightMatrexis());
         assertNotEquals(tB, mNetwork.getBiasis());
         

@@ -6,9 +6,12 @@
 package com.tennander.NeuralNetworking;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import Jama.Matrix;
@@ -20,11 +23,12 @@ import mnist.tools.MnistManager;
  *
  * @author David Tennander, 9 juni 2016
  */
-public class MNISTDataHandler {
+public class  MNISTDataHandler extends MnistManager implements Serializable{
 
 
     private static final int EIGHT_BIT_VALUE = 255;
-    private MnistManager mManeger;
+    private ArrayList<Matrix> mImageList;
+    private ArrayList<Integer> mLabelList;
 
     /**
      * @param pString
@@ -32,30 +36,37 @@ public class MNISTDataHandler {
      * @throws IOException 
      */
     public MNISTDataHandler(String pImageString, String pLabelString) throws IOException {
-        mManeger = new MnistManager(pImageString, pLabelString);
+        super(pImageString, pLabelString);
     }
 
     public List<Matrix> getListOfImages() throws IOException {
-        MnistImageFile tImages = mManeger.getImages();
-        ArrayList<Matrix> tResultList = new ArrayList<>();
+        if(mImageList == null) {
+            MnistImageFile tImages = this.getImages();
+            ArrayList<Matrix> tResultList = new ArrayList<>();
 
-        for (int tI = 0; tI < tImages.getCount(); tI++) {
-            int[][] tImage = tImages.readImage();
-            Matrix tMatrix = convertToMatrix(tImage, EIGHT_BIT_VALUE);
-            tResultList.add(tMatrix);
+            for (int tI = 0; tI < tImages.getCount(); tI++) {
+                int[][] tImage = tImages.readImage();
+                Matrix tMatrix = convertToMatrix(tImage, EIGHT_BIT_VALUE);
+                tResultList.add(tMatrix);
+            }
+            mImageList = tResultList;
         }
-        
-        return tResultList;
+
+
+        return mImageList;
 
     }
     public List<Integer> getListOfLabels() throws IOException {
-        MnistLabelFile tLabels = mManeger.getLabels();
-        ArrayList<Integer> tResultList = new ArrayList<>();
-        for (int tI = 0; tI < tLabels.getCount(); tI++) {
-            int tLabel = tLabels.readLabel();
-            tResultList.add(tLabel);
+        if(mLabelList == null) {
+            MnistLabelFile tLabels = this.getLabels();
+            ArrayList<Integer> tResultList = new ArrayList<>();
+            for (int tI = 0; tI < tLabels.getCount(); tI++) {
+                int tLabel = tLabels.readLabel();
+                tResultList.add(tLabel);
+            }
+            mLabelList = tResultList;
         }
-        return tResultList;
+        return mLabelList;
     }
     /**
      * Creates a matrix representation of the given image.
@@ -63,14 +74,15 @@ public class MNISTDataHandler {
      * @return
      */
     public Matrix convertToMatrix(int[][] pImage, int pScaleFactor) {
-        
-        double[][] tScaledMatrix = Arrays.stream(pImage).map( row -> 
-        IntStream.range(0, row.length)
-        .mapToDouble(i -> row[i]/pScaleFactor)
-        .toArray()
-                ).toArray(double[][]::new);
-        
-        return new Matrix(tScaledMatrix);
+        LinkedList<Double> tList = new LinkedList<>();
+        for (int[] tRow : pImage) {
+            for (int tElement : tRow) {
+                double td = (double)tElement/(double)pScaleFactor;
+                tList.add(td);
+            }
+        }
+        double[] tArray = tList.stream().mapToDouble(Double::doubleValue).toArray();
+        return (new Matrix(new double[][]{ tArray})).transpose();
     }
 
 }
