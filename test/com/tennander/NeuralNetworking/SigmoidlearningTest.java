@@ -5,14 +5,18 @@
  */
 package com.tennander.NeuralNetworking;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.fail;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.junit.Before;
 import org.junit.Test;
 
-import uk.ac.ebi.pride.tools.pkl_parser.PklFile;
+import Jama.Matrix;
+import mnist.tools.MnistImageFile;
+import mnist.tools.MnistLabelFile;
+import mnist.tools.MnistManager;
 
 /**
  *
@@ -20,22 +24,23 @@ import uk.ac.ebi.pride.tools.pkl_parser.PklFile;
  */
 public class SigmoidlearningTest {
 
-    private PklFile mData;
+
+    
+
+    private MNISTDataHandler mManeger;
 
     /**
      * @throws java.lang.Exception
      */
     @Before
     public void setUp() throws Exception {
-       File tSourceFile = new File("lib/neural-networks/data/mnist.pkl");
-       System.out.println(tSourceFile.canRead());
-       mData = new PklFile(tSourceFile);
-       System.out.println(mData.getFileIndex() );
+        mManeger = new MNISTDataHandler("lib/mnistData/train-images.idx3-ubyte", "lib/mnistData/train-labels.idx1-ubyte");
+        
     }
 
     @Test
     public void test() {
-        fail("Not yet implemented");
+       
     }
 
 }
