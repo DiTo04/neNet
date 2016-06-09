@@ -32,6 +32,11 @@
     <artifactId>pkl-parser</artifactId>
     <version>1.2.6-SNAPSHOT</version>
   </dependency>
+  <dependency>
+    <groupId>org.knowm.datasets</groupId>
+    <artifactId>datasets-mnist</artifactId>
+    <version>2.1.0</version>
+  </dependency>
   </dependencies>
 
   <dependencyManagement>
