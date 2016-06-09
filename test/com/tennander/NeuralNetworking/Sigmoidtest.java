@@ -5,15 +5,14 @@
  */
 package com.tennander.NeuralNetworking;
 
-import static org.junit.Assert.*;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.experimental.categories.Categories.ExcludeCategory;
+import static org.junit.Assert.assertNotEquals;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
+
+import org.junit.Before;
+import org.junit.Test;
+
 import Jama.Matrix;
 
 /**

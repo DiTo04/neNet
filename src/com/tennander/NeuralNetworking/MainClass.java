@@ -13,28 +13,22 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
 
 import javax.imageio.ImageIO;
 
 import Jama.Matrix;
-import mnist.tools.MnistManager;
 
 /**
  *
  * @author David Tennander, 9 juni 2016
  */
-public class main {
+public class MainClass {
 
     /**
      * 
@@ -84,7 +78,7 @@ public class main {
         }
         System.out.println("Trying to gess");
         MNISTDataHandler tManeger = new MNISTDataHandler(TRAIN_IMAGES, TRAIN_LABELS_STRING);
-        int tMaxNr = tManeger.getImages().getCount();
+
         int tPicToGuess = 233;
         tManeger.setCurrent(tPicToGuess);
         int[][] tImage = tManeger.readImage();
@@ -115,6 +109,7 @@ public class main {
      * @throws IOException
      * @throws FileNotFoundException
      */
+    @SuppressWarnings("unchecked")
     private static HashMap<Matrix,Matrix> getData()  throws IOException, FileNotFoundException {
         HashMap<Matrix,Matrix> tData = new HashMap<>();
         try{

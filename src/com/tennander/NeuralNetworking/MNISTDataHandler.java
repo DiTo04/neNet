@@ -6,13 +6,9 @@
 package com.tennander.NeuralNetworking;
 
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.IntStream;
 
 import Jama.Matrix;
 import mnist.tools.MnistImageFile;
@@ -23,7 +19,7 @@ import mnist.tools.MnistManager;
  *
  * @author David Tennander, 9 juni 2016
  */
-public class  MNISTDataHandler extends MnistManager implements Serializable{
+public class  MNISTDataHandler extends MnistManager {
 
 
     private static final int EIGHT_BIT_VALUE = 255;
