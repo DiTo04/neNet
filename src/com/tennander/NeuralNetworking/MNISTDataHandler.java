@@ -31,8 +31,8 @@ public class MNISTDataHandler {
      * @param pString2
      * @throws IOException 
      */
-    public MNISTDataHandler(String pString, String pString2) throws IOException {
-        mManeger = new MnistManager(pString, pString2);
+    public MNISTDataHandler(String pImageString, String pLabelString) throws IOException {
+        mManeger = new MnistManager(pImageString, pLabelString);
     }
 
     public List<Matrix> getListOfImages() throws IOException {
