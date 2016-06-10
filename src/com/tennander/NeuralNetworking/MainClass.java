@@ -42,6 +42,7 @@ public class MainClass {
      * 
      */
     private static final String DATA_SAVE_LOCATION = "MNISTData.david";
+    private static final String NEURAL_NETWORK_SAVEFILE = "digitReader.neNet";
     private static final String TRAIN_LABELS_STRING = "lib/mnistData/t10k-labels.idx1-ubyte";
     private static final String TRAIN_IMAGES = "lib/mnistData/t10k-images.idx3-ubyte";
     private static final int BATCH_SIZE = 30;
@@ -51,47 +52,82 @@ public class MainClass {
      * @param args
      * @throws IOException 
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
+        SigmoidNetwork tNetwork = null;
+        System.out.println("Loading Network");
+        tNetwork = loadDigitReaderNetwork();
+
         System.out.println("Getting data from Disk...");
-
-        HashMap<Matrix,Matrix> tData = getData();
-
-        System.out.println("Creating Network...");
-        int tRows = IMAGE_SIZE;
-        int tColumns = IMAGE_SIZE;
-        int tSize = tRows*tColumns;
-        SigmoidNetwork tNetwork = new SigmoidNetwork(tSize,30,10);
+        HashMap<Matrix,Matrix> tData = null;
+        try{
+            tData = getData();
+        } catch (IOException e) {
+            System.out.println("Could not read MNIST data. Exiting.");
+            return;
+        }
         Iterator<Entry<Matrix, Matrix>> tDataIterator = tData.entrySet().iterator();
         for(int tIndex = 0; tIndex < tData.size();tIndex+=BATCH_SIZE) {
             System.out.format("Starting Batch: %d%n", tIndex/BATCH_SIZE);
-
             Set<Entry<Matrix, Matrix>> tBatch = new HashSet<>();
-            for(int i = tIndex; i<tIndex+BATCH_SIZE;i++){
-                if(tDataIterator.hasNext()){
-                    tBatch.add(tDataIterator.next());
-                } else {
-                    break;
-                }
+            for(int i = tIndex; i<tIndex+BATCH_SIZE && tDataIterator.hasNext();i++){
+                tBatch.add(tDataIterator.next());
             }
             tNetwork.updateGivenSetOfData(tBatch, ETA, SHOULD_PRINT_ERROR);
-
+        }
+        System.out.println("Saving new knowlage");
+        try {
+            File tSaveFile = new File(NEURAL_NETWORK_SAVEFILE);
+            tNetwork.saveSetupToFile(tSaveFile);
+        } catch (IOException e) {
+            System.out.println("ERROR: Could not save network...");
+            e.printStackTrace();
         }
         System.out.println("Trying to gess");
-        MNISTDataHandler tManeger = new MNISTDataHandler(TRAIN_IMAGES, TRAIN_LABELS_STRING);
+        guessADigitt(622);
+        System.out.println("Done!");
 
-        int tPicToGuess = 233;
-        tManeger.setCurrent(tPicToGuess);
-        int[][] tImage = tManeger.readImage();
-        int tLabel = tManeger.readLabel();
+    }
+    /**
+     * @return
+     */
+    private static SigmoidNetwork loadDigitReaderNetwork() {
+        SigmoidNetwork tNetwork;
+        File tSaveFile = new File(NEURAL_NETWORK_SAVEFILE);
+        try{
+            tNetwork = new SigmoidNetwork(tSaveFile);
+        } catch (IOException | ClassNotFoundException e) {
+            System.out.println("Network file not found, creating new.");
+            int tRows = IMAGE_SIZE;
+            int tColumns = IMAGE_SIZE;
+            int tSize = tRows*tColumns;
+            tNetwork = new SigmoidNetwork(tSize,30,10);            
+        }
+        return tNetwork;
+    }
+    public static void guessADigitt(int tPicToGuess)  {
+        SigmoidNetwork tNetwork = loadDigitReaderNetwork();
+        MNISTDataHandler tManeger;
+        int tLabel;
+        int[][] tImage;
+        try {
+            tManeger = new MNISTDataHandler(TRAIN_IMAGES, TRAIN_LABELS_STRING);
+            tManeger.setCurrent(tPicToGuess);
+            tImage = tManeger.readImage();
+            tLabel = tManeger.readLabel();
+        } catch (IOException e1) {
+            System.out.println("Could not find images or Label data... Exiting!");
+            return;
+        }
+
         System.out.format("Should find a %d%n",tLabel);
         BufferedImage tPPMImage = ppm(IMAGE_SIZE, IMAGE_SIZE, 255, tImage);
         try{
             File outputfile = new File("GuessedNr.png");
             ImageIO.write(tPPMImage, "png", outputfile);
         } catch(IOException e){
-            System.out.println("COuld not write picture... :(");
+            System.out.println("Could not write picture... :(");
         }
-        
+
         Matrix tInput = tManeger.convertToMatrix(tImage, 255);
         Matrix tOutput = tNetwork.feedForward(tInput);
         tOutput = tOutput.times(1/tOutput.norm1()).times(100);
@@ -99,10 +135,7 @@ public class MainClass {
         for (double[] tRow : tOutput.getArrayCopy()) {
             System.out.format("[%s]%n",tRow[0]);
         }
-
-
     }
-
     /**
      * @param tDataHandler
      * @return

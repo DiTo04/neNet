@@ -5,6 +5,8 @@
  */
 package com.tennander.NeuralNetworking;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -38,6 +40,17 @@ public class SigmoidNetwork {
         }
     }
 
+    /**
+     * @param pFile
+     * @throws IOException 
+     * @throws ClassNotFoundException 
+     */
+    public SigmoidNetwork(File pFile) throws ClassNotFoundException, IOException {
+        List<List<Matrix>> tWeightAndBiasis = SigmoidNetworkFileParser.getWeightAndBiasisFromFile(pFile);
+        mWeightMatrexis = tWeightAndBiasis.get(0);
+        mBiasis = tWeightAndBiasis.get(1);
+    }
+
     public Matrix feedForward(Matrix a) {
         try{
             for (int tI = 0; tI < mWeightMatrexis.size(); tI++) {
@@ -55,6 +68,7 @@ public class SigmoidNetwork {
     public void updateGivenSetOfData(Set<Entry<Matrix, Matrix>> pDataSeries, double pEta, boolean pShouldPrintError) {
         List<Matrix> wNablaSumList = null;
         List<Matrix> bNablaSumList = null;
+        
         for (Entry<Matrix, Matrix> tEntry : pDataSeries) {
             List<List<Matrix>> nablas = backprop(tEntry.getKey(),tEntry.getValue());
             if(wNablaSumList == null) {
@@ -90,7 +104,7 @@ public class SigmoidNetwork {
      */
 
 
-    public List<List<Matrix>> backprop(Matrix pInput,Matrix pDesiredResult){
+    private List<List<Matrix>> backprop(Matrix pInput,Matrix pDesiredResult){
 
         int tL = mWeightMatrexis.size();
         List<Matrix> tNablaW = new ArrayList<>(tL);
@@ -167,6 +181,7 @@ public class SigmoidNetwork {
     }
 
     /**
+     * There for testing.
      * @return the weightMatrexis
      */
     public List<Matrix> getWeightMatrexis() {
@@ -177,16 +192,6 @@ public class SigmoidNetwork {
         return tResult;
     }
 
-    /**
-     * @param pWeightMatrexis the weightMatrexis to set
-     */
-    public void setWeightMatrexis(List<Matrix> pWeightMatrexis) {
-        ArrayList<Matrix> tNewList = new ArrayList<>();
-        for (Matrix tMatrix : pWeightMatrexis) {
-            tNewList.add(tMatrix.copy());
-        }
-        mWeightMatrexis = tNewList;
-    }
 
     /**
      * @return the biasis
@@ -208,6 +213,15 @@ public class SigmoidNetwork {
             tNewList.add(tMatrix.copy());
         }
         mWeightMatrexis = tNewList;
+    }
+
+    /**
+     * Saves the current setup to file.
+     * @param pFile
+     * @throws IOException 
+     */
+    public void saveSetupToFile(File pFile) throws IOException {
+       SigmoidNetworkFileParser.saveWeightAndBiasis(mWeightMatrexis, mBiasis, pFile);
     }
 
 }
